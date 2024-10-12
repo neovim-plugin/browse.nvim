@@ -2,33 +2,47 @@
 
 # browse.nvim
 
-##### browse for anything using your choice of method
+### Seamless browsing experience in Neovim with customizable search providers
 
 ![Neovim](https://img.shields.io/badge/NeoVim-%2357A143.svg?&style=for-the-badge&logo=neovim&logoColor=white)
 [![Lua](https://img.shields.io/badge/Lua-blue.svg?style=for-the-badge&logo=lua)](http://www.lua.org)
-[![License](https://img.shields.io/github/license/lalitmee/browse.nvim?color=%23FFC600&style=for-the-badge)](https://github.com/lalitmee/browse.nvim/blob/main/LICENSE)
-
-![browse.nvim](https://user-images.githubusercontent.com/10762218/217238018-29564296-063a-43cb-a3c1-28703db9c31c.gif)
+[![License](https://img.shields.io/github/license/neovim-plugin/browse.nvim?color=%23FFC600&style=for-the-badge)](https://github.com/neovim-plugin/browse.nvim/blob/main/LICENSE)
 
 </div>
 
+## Table of Contents
+1. [Features](#features)
+2. [Requirements](#requirements)
+3. [Installation](#installation)
+4. [Setup](#setup)
+5. [Usage](#usage)
+   - [Bookmarks](#bookmarks)
+   - [Search](#search)
+   - [DevDocs](#devdocs)
+   - [MDN](#mdn)
+6. [Customizations](#customizations)
+7. [Command Usage](#command-usage)
+8. [Acknowledgements and Credits](#acknowledgements-and-credits)
+
+---
+
 ## Features
 
-- cross platform
-- reduces your search key strokes for any stackoverflow query
-- [devdocs](https://devdocs.io) search
-- [MDN](https://developer.mozilla.org/en-US/) search
+- 🖥️ **Cross-platform**: Works on Linux, macOS, Windows, and WSL.
+- ⌨️ **Efficient Searching**: Reduces search keystrokes for queries on [StackOverflow](https://stackoverflow.com), [DevDocs](https://devdocs.io), and [MDN](https://developer.mozilla.org/en-US/).
+- 🔍 **Customizable Providers**: Define your own search providers or use pre-built ones.
+- 🔖 **Bookmarks**: Easily open and search your saved bookmarks.
 
 ## Requirements
 
-- [neovim](https://github.com/neovim/neovim) (0.7.0+)
-- [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
-- open cmd
-  - [xdg-open](https://linux.die.net/man/1/xdg-open) (linux)
-  - [wslview](https://github.com/wslutilities/wslu) (wsl)
-  - [open](https://ss64.com/osx/open.html) (mac)
-  - [start](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/start) (windows)
-- [dressing.nvim](https://github.com/stevearc/dressing.nvim) it will make the inputs and selects pretty (optional)
+- [Neovim](https://github.com/neovim/neovim) (0.7.0+)
+- [Telescope.nvim](https://github.com/nvim-telescope/telescope.nvim) for interactive picking.
+- Command for opening URLs:
+  - [xdg-open](https://linux.die.net/man/1/xdg-open) (Linux)
+  - [wslview](https://github.com/wslutilities/wslu) (WSL)
+  - [open](https://ss64.com/osx/open.html) (macOS)
+  - [start](https://docs.microsoft.com/en-us/windows-server/administration/windows-commands/start) (Windows)
+- [dressing.nvim](https://github.com/stevearc/dressing.nvim) (optional) for better input and selection UIs.
 
 ## Installation
 
@@ -36,7 +50,7 @@
 
   ```lua
   {
-      "lalitmee/browse.nvim",
+      "neovim-plugin/browse.nvim",
       dependencies = { "nvim-telescope/telescope.nvim" },
   }
   ```
@@ -45,7 +59,7 @@
 
   ```lua
   use({
-      "lalitmee/browse.nvim",
+      "neovim-plugin/browse.nvim",
       requires = { "nvim-telescope/telescope.nvim" },
   })
   ```
@@ -54,7 +68,7 @@
 
   ```vim
   Plug 'nvim-telescope/telescope.nvim'
-  Plug 'lalitmee/browse.nvim'
+  Plug 'neovim-plugin/browse.nvim'
   ```
 
 ## Setup
@@ -62,33 +76,32 @@
 ```lua
 -- default values for the setup
 require('browse').setup({
-  -- search provider you want to use
-  provider = "google", -- duckduckgo, bing
-
-  -- either pass it here or just pass the table to the functions
-  -- see below for more
   bookmarks = {},
   icons = {
-      bookmark_alias = "->", -- if you have nerd fonts, you can set this to ""
-      bookmarks_prompt = "", -- if you have nerd fonts, you can set this to "󰂺 "
-      grouped_bookmarks = "->", -- if you have nerd fonts, you can set this to 
-  }
-  -- if you want to persist the query for grouped bookmarks
-  -- See https://github.com/lalitmee/browse.nvim/pull/23
+    bookmark_alias = "->",
+    bookmark_prompt = "",
+    grouped_bookmarks = "->",
+  },
   persist_grouped_bookmarks_query = false,
+  debug = false,
+  use_icon = true,
+  init = function()
+    require("browse.providers.input")
+    require("browse.providers.bookmarks")
+    require("browse.providers.devdocs")
+    require("browse.providers.mdn")
+    require("browse.providers.devdocs_file")
+  end,
 })
 ```
 
 ## Usage
 
-There are so many ways in which you can use this to improve your search experience. After `bookmarks` table support for multiple formats and organized structure of the bookmarks, you can just use `open_bookmarks()` api.
+### Bookmarks
 
-### bookmarks
+You can declare bookmarks in various formats. Below are some examples:
 
-For bookmarks you can declare your bookmarks in lua table format. `bookmarks`
-table can contain multiple structures.
-
-1. grouped urls with a name key in the table (recommended)
+1. Grouped URLs with a name key (recommended):
 
    ```lua
    local bookmarks = {
@@ -102,7 +115,7 @@ table can contain multiple structures.
    }
    ```
 
-2. urls with aliases
+2. URLs with aliases:
 
    ```lua
    local bookmarks = {
@@ -111,7 +124,7 @@ table can contain multiple structures.
    }
    ```
 
-3. urls with a query parameter
+3. URLs with a query parameter:
 
    ```lua
    local bookmarks = {
@@ -120,7 +133,7 @@ table can contain multiple structures.
    }
    ```
 
-4. simple and direct urls
+4. Simple and direct URLs:
 
    ```lua
    local bookmarks = {
@@ -132,115 +145,83 @@ table can contain multiple structures.
     }
    ```
 
-5. you can also combine all of the above in a table if you want.
+5. Combine all of the above in a single table if desired.
 
-and then pass this table into the `browse()` function like this
+To use bookmarks:
 
 ```lua
 vim.keymap.set("n", "<leader>b", function()
-  require("browse").browse({ bookmarks = bookmarks })
+  require("browse").run_action({ bookmarks = bookmarks })
 end)
 ```
 
-> If this `bookmarks` table will be empty or will not be passed and if you select `Bookmarks`
-> from `telescope` result, you will not see anything in the telescope results.
+> IF the `bookmarks` table is empty or not passed, selection "Bookmarks" in Telescope will show an
+> empty result.
 
-### search
+### Search
 
-- `input_search()`, it will prompt you to search for something
+- Prompt a search: 
 
 ```lua
-require('browse').input_search()
+require('browse').run_action('input')
 ```
 
-- `open_bookmarks()`, search with the table `bookmarks`
+- Search with bookmarks:
 
 ```lua
-require("browse").open_bookmarks({ bookmarks = bookmarks })
+require("browse").run_action('bookmarks', { bookmarks = bookmarks })
 ```
 
-- `browse()`, it opens `telescope.nvim` dropdown theme to select the method
+- Open `telescope.nvim` dropdown to select a method:
 
 ```lua
-require("browse").browse({ bookmarks = bookmarks })
+require("browse").run_action({ bookmarks = bookmarks })
 ```
 
-### devdocs
+### DevDocs
 
-- `devdocs.search()`, search for anything in the [devdocs](https://devdocs.io/)
+- Search [DevDocs](https://devdocs.io/):
 
 ```lua
-require('browse.devdocs').search()
+require('browse').run_action("devdocs")
 ```
 
-- `devdocs.search_with_filetype()`, search for anything for the current file type
+- Search DevDocs based on the current filetype:
 
 ```lua
-require('browse.devdocs').search_with_filetype()
+require('browse').run_action("devdocs_file")
 ```
 
-### mdn
+### MDN
 
-- `mdn.search()`, search for anything on [MDN](https://developer.mozilla.org/en-US/)
+- Search on [MDN](https://developer.mozilla.org/en-US/)
 
 ```lua
-require('browse.mdn').search()
+require('browse').run_action("mdn")
 ```
 
 ## Customizations
 
-You can customize the `input_search()` to use the `provider` you like. Possible values for the provider are following:
-
-- `google`
-- `duckduckgo`
-- `brave`
-- `bing`
-
-## Advanced usage
-
-Create commands for all the functions which `browse.nvim` exposes and then simply run whatever you want from the
-command line
+You can register your own provider with:
 
 ```lua
-local browse = require('browse')
-
-function command(name, rhs, opts)
-  opts = opts or {}
-  vim.api.nvim_create_user_command(name, rhs, opts)
-end
-
-command("InputSearch", function()
-  browse.input_search()
-end, {})
-
--- this will open telescope using dropdown theme with all the available options
--- in which `browse.nvim` can be used
-command("Browse", function()
-  browse.browse({ bookmarks = bookmarks })
-end)
-
-command("Bookmarks", function()
-  browse.open_bookmarks({ bookmarks = bookmarks })
-end)
-
-command("DevdocsSearch", function()
-  browse.devdocs.search()
-end)
-
-command("DevdocsFiletypeSearch", function()
-  browse.devdocs.search_with_filetype()
-end)
-
-command("MdnSearch", function()
-  browse.mdn.search()
-end)
+require('browse').register(provider)
 ```
+
+## Command Usage
+
+You can invoke the `Browse` command in Neovim using:
+
+```vim
+:Browse [subcommand]
+```
+
+- **Subcommand**: The `subcommand` corresponds to a specific provider (e.g., `input`, `mdn`, `devdocs`, `bookmarks`). If you provide a subcommand, `browse.nvim` will use that provider to execute the corresponding action.
+
+- **Empty Subcommand**: If no subcommand is provided, the command will fallback to `Browse.run_action()`, which will prompt you to select a provider or perform a default action.
 
 ## Acknowledgements and Credits
 
 - [telescope.nvim](https://github.com/nvim-telescope/telescope.nvim)
 - [open-browser.nvim](https://github.com/tyru/open-browser.vim)
-
-## Support
-
-<a href="https://www.buymeacoffee.com/iamlalitmee" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+- [original browse.nvim](https://github.com/lalitmee/browse.nvim)

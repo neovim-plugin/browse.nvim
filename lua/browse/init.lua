@@ -130,14 +130,18 @@ function M.run_action(provider_name, ...)
 
   -- Wrap the function with varargs inside pcall
   local success, err = pcall(function(provider_n, ...)
-    local provider = require("browse.providers").get(provider_n)
-
-    if provider and type(provider.search) == "function" then
-      -- Pass varargs to provider.search
-      provider.search(...)
+    if type(provider_n) == "table" then
+      browse(provider_n)
     else
-      -- If provider doesn't exist, fallback to browse
-      browse(...)
+      local provider = require("browse.providers").get(provider_n)
+
+      if provider and type(provider.search) == "function" then
+        -- Pass varargs to provider.search
+        provider.search(...)
+      else
+        -- If provider doesn't exist, fallback to browse
+        browse(...)
+      end
     end
   end, provider_name, ...) -- Pass provider_name and varargs into pcall
 
