@@ -1,26 +1,36 @@
 local M = {}
 
-M.opts = {
-    provider = "google",
-    bookmarks = {
-        -- -- urls
-        -- "https://github.com/lalitmee/browse.nvim",
-
-        -- -- aliases
-        -- ["github_code_search"] = "https://github.com/search?q=%s&type=code",
-        -- ["github_repo_search"] = "https://github.com/search?q=%s&type=respositories",
-    },
-    icons = {
-        bookmark_alias = "->",
-        bookmarks_prompt = "",
-        grouped_bookmarks = "->",
-    },
-    persist_grouped_bookmarks_query = false,
+--- @type Browse.Configurations
+local config = {
+  bookmarks = {},
+  icons = {
+    bookmark_alias = "->",
+    bookmark_prompt = "",
+    grouped_bookmarks = "->",
+  },
+  persist_grouped_bookmarks_query = false,
+  debug = false,
+  use_icon = true,
+  init = function()
+    require("browse.providers.input")
+    require("browse.providers.bookmarks")
+    require("browse.providers.devdocs")
+    require("browse.providers.mdn")
+    require("browse.providers.devdocs_file")
+  end,
 }
 
-function M.setup(opts)
-    opts = opts or {}
-    M.opts = vim.tbl_deep_extend("force", M.opts, opts)
+--- @param configuration Browse.Configurations.Optional?
+function M.merge_with(configuration)
+  config = vim.tbl_deep_extend("force", config, configuration or {})
 end
 
-return M
+function M.get_config()
+  return config
+end
+
+return setmetatable(M, {
+  __index = function(_, k)
+    return config[k]
+  end,
+})
