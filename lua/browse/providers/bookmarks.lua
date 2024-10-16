@@ -202,7 +202,7 @@ local function search(opts)
   --- @type Browse.Bookmarks.Options
   --- @diagnostic disable-next-line
   opts = vim.tbl_deep_extend("force", config.get_config(), opts or {})
-  opts.visual_text = conf.visual_text or utils.get_visual_selection()
+  opts.visual_text = opts.visual_text or utils.get_visual_selection()
   bookmark_search(opts)
 end
 

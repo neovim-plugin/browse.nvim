@@ -132,7 +132,7 @@ end
 --- @param input string String that you want to capitalize the first letter of
 --- @return string output
 function M.capitalize_first_letter(input)
-  return input:sub(1, 1):upper() .. input:sub(2)
+  return string.upper(string.sub(input, 1, 1)) .. string.sub(input, 2)
 end
 
 --- @param title string
@@ -145,7 +145,7 @@ end
 --- Retrieves the visual selection using getregion for improved speed.
 --- @return string | nil
 function M.get_visual_selection()
-  vim.api.nvim_exec2("exec \"silent normal! \\<esc>\"", {})
+  M.to_normal_mode()
 
   --- @type boolean, string[]
   local ok, region
@@ -173,7 +173,7 @@ function M.get_visual_selection()
   if ok then
     local cleaned_lines = {}
     for _, line in ipairs(region) do
-      local cleaned_line = line:gsub("%s+", "")
+      local cleaned_line = line:match("^%s*(.-)%s*$")
       if cleaned_line ~= "" then
         table.insert(cleaned_lines, cleaned_line)
       end
@@ -182,8 +182,14 @@ function M.get_visual_selection()
     vim.api.nvim_exec2("delmarks < >", {})
 
     return #cleaned_lines > 0 and table.concat(cleaned_lines, " ") or nil
+  else
+    return vim.fn.expand("<cexpr>")
   end
-  return nil
+end
+
+function M.to_normal_mode()
+  local esc = vim.api.nvim_replace_termcodes("<esc>", true, false, true)
+  vim.api.nvim_feedkeys(esc, "n", false)
 end
 
 return M
